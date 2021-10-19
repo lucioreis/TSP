@@ -99,14 +99,14 @@ fn calcula(n : usize, distances: Vec<i32>) -> Deck {
 }
 
 fn main() {
-    println!("---Dados fornecidos pelo trabalho---");
-    if let Ok((num_cities, distances)) = read_data("data_13.txt"){
+    println!("---Dados quaisquer---");
+    if let Ok((num_cities, distances)) = read_data("data_tsp.txt"){
         let result = calcula(num_cities as usize, distances);
         println!("{}", result);
     }
     
     println!("---Dados coletados na internet---");
-    if let Ok((num_cities, distances)) = read_data("data_2.txt"){
+    if let Ok((num_cities, distances)) = read_data("data_real_tsp.txt"){
         let result = calcula(num_cities as usize, distances);
         println!("{}", result);
         let nomes = vec!["VC","BH","RJ","SP","VT","CU","FL","PA"];
