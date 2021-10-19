@@ -24,25 +24,12 @@ impl Deck {
             self.v = v.clone();
         }
     }
-
 }
 
 impl std::fmt::Display for Deck {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Dist:{} pela rota {}", self.x, (|vector: &Vec<usize>| {
-            if vector.len() == 0 {
-                String::from("[]")
-            } else {
-                let mut s = format!("[{}->",vector[0]);
-                for i in vector {
-                    s = format!("{}->{}",s,i);
-                }
-                return format!("{}]", s);
-            }
-        })(&self.v))
+        write!(f, "Dist:{} pela rota {:?}", self.x, self.v)
     }
-
-
 }
 
 fn read_data(filename: &str) -> Result<(i32, Vec::<i32>), Erro> {
@@ -65,24 +52,21 @@ fn read_data(filename: &str) -> Result<(i32, Vec::<i32>), Erro> {
             }
         }
     }
-    println!("{:?}", result);
     return Ok((result.remove(0), result));
 }
 
 fn delta(rota: &Vec<usize>, distances: &Vec<i32>, n: usize) -> i32 {
     let mut delta: i32 = 0;
-    for i in 0..rota.len() {//[1 2 3 4] [1.2.3.4|5.6.7.8|9.10.11.12]
+    for i in 0..rota.len() {
         let x = (rota[i]-1)*n;
         let y = rota[(i+1)%n] -1;
         let next = x+y;
         delta = delta + distances[next];
-    }//5 + 8 + 9 + 7  // [0 4 8 12][0 1 2 3]
-   //[2,1,3,4]-0 7 8 7 | 5 0 8 8 | 9 6 0 9 | 10 7 10 0
+    }
     return delta;
 }
-#[warn(non_snake_case)]
+#[allow(non_snake_case)]
 fn calcula(n : usize, distances: Vec<i32>) -> Deck {
-    //c is an encoding of the stack state. c[k] encodes the for-loop counter for when generate(k - 1, A) is called
     let mut c = std::vec!();
     let mut A = std::vec!();
     let mut result = Deck::new();
@@ -93,11 +77,6 @@ fn calcula(n : usize, distances: Vec<i32>) -> Deck {
     }
     result.push(delta(&A, &distances, n), &A);
 
-    let mut counter = 1;
-    let mut goal = 1;
-    for i in 2..=n {goal *= i;}
-    
-    //i acts similarly to the stack pointer
     let mut i = 1;
     while i < n  {
         if  c[i] < i {
@@ -107,17 +86,11 @@ fn calcula(n : usize, distances: Vec<i32>) -> Deck {
             else {
                 A.swap(c[i], i);
             }
-            //println!("{}-{:?}",delta(&A, &distances, n), &A);
-            counter += 1;
-            if counter % 100000 == 0 {println!("{}/{}",(counter/goal)*100, 100);}
             result.push(delta(&A, &distances, n), &A);
-            //Swap has occurred ending the for-loop. Simulate the increment of the for-loop counter
             c[i] += 1;
-            //Simulate recursive call reaching the base case by bringing the pointer to the base case analog in the array
             i = 1;
         }
         else{
-            //Calling generate(i+1, A) has ended as the for-loop terminated. Reset the state and simulate popping the stack by incrementing the pointer.
             c[i] = 0;
             i += 1;
         }
@@ -126,9 +99,27 @@ fn calcula(n : usize, distances: Vec<i32>) -> Deck {
 }
 
 fn main() {
-    if let Ok((num_cities, distances)) = read_data("data_matrix.txt"){
+    println!("---Dados fornecidos pelo trabalho---");
+    if let Ok((num_cities, distances)) = read_data("data_13.txt"){
         let result = calcula(num_cities as usize, distances);
         println!("{}", result);
+    }
+    
+    println!("---Dados coletados na internet---");
+    if let Ok((num_cities, distances)) = read_data("data_2.txt"){
+        let result = calcula(num_cities as usize, distances);
+        println!("{}", result);
+        let nomes = vec!["VC","BH","RJ","SP","VT","CU","FL","PA"];
+        println!("{}", "For Humans:");
+        println!("Distâcia: {}KM\nPela rota: {:?}", result.x, (|vector: &Vec<_>|{
+            let mut s = String::new();
+            for i in vector {
+                s.push_str(nomes[*i-1]);
+                s.push_str(" ");
+            }
+            s
+        })(&result.v));
+        
     }
     
 }
